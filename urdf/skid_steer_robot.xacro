@@ -1,0 +1,698 @@
+<?xml version='1.0'?>
+
+<robot name="skid_steer_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find skid_steer_robot)/urdf/skid_steer_robot.gazebo" />
+  <!--<xacro:include filename="$(find skid_steer_robot)/urdf/kinect.gazebo">-->
+  
+
+
+
+
+    
+
+  <xacro:property name="M_PI" value="3.14159"/>
+
+  <xacro:arg name="robot_namespace" default="/" />
+  <xacro:arg name="kinect_enabled" default="false" />
+  
+  <xacro:arg name="kinect_rpy" default="0 0 0" />
+  <xacro:arg name="kinect_xyz2" default=" 0 0.247 0.397" />
+  <xacro:arg name="kinect_rpy2" default="0 0 ${M_PI}" />
+  <!--Scale the robot size to fit the environment -->
+  <xacro:property name="scale" value="1.0" />
+  <xacro:property name="wheel_y_offset_e" value="0.034" />
+  <xacro:property name="wheel_x_offset_e" value="-0.0635" />
+  <xacro:property name="wheel_z_offset_e" value="0.00256" />
+  <xacro:property name="length_extremity_center_wheel_x" value="0.1565" />
+  <xacro:property name="width_extremity_center_wheel_y" value="0.0238" />
+  <xacro:property name="wheel_center_height" value="0.0276" />
+  <xacro:property name="wheel_area_width" value="0.0476" />
+  <xacro:property name="wheel_area_length" value="0.13" />
+  <xacro:property name="l_b_wheel_center_x" value="${length_extremity_center_wheel_x}" />
+  <xacro:property name="l_b_wheel_center_y" value="${robot_width - wheel_area_width/2.0}" />
+  <xacro:property name="M_PI" value="3.14159"/>
+  <xacro:property name="prefix" value="camera"/>
+  <xacro:property name="sensor_name" value="camera"/>
+  <xacro:property name="parent_link" value="lowercover"/>
+  <xacro:property name="rate" value="30.0"/>
+
+  <!-- Length along X-axis, Width along Y-axis, Height along Z-axis -->
+  <xacro:property name="mower_width" value="${scale * 0.58}" />
+  <xacro:property name="mower_length" value="${scale * 0.4833333}" />
+  <xacro:property name="mower_height" value="${scale * 0./2.0}" />
+  <xacro:property name="mower_mass" value="${scale * 10}" />
+  <xacro:property name="base_x_offset" value="0" />
+ <!-- Length along X-axis, Width along Y-axis, Height along Z-axis -->
+   <xacro:property name="robot_width" value="0.49" />  
+   <xacro:property name="robot_length" value="0.58" />
+   <xacro:property name="robot_height" value="0.58" />
+   <xacro:arg name="kinect_xyz" default=" ${0.591975-robot_length/2.0} ${0.247-robot_width/2.0} 0.397" />
+  <!-- inertia = 1/12*m(h^2+d^2) -->
+  <xacro:property name="height_2" value="${mower_height * mower_height}" />
+  <xacro:property name="width_2" value="${mower_width * mower_width}" />
+  <xacro:property name="length_2" value="${mower_length * mower_length}" />
+  <xacro:property name="mower_inertia_xx" value="${mower_mass/12.0 * (height_2 + width_2)}" />
+  <xacro:property name="mower_inertia_yy" value="${mower_mass/12.0 * (height_2 + length_2)}" />
+  <xacro:property name="mower_inertia_zz" value="${mower_mass/12.0 * (width_2 + length_2)}" />
+  <xacro:property name="mower_i_x_pos" value="${base_x_offset}" />
+  <xacro:property name="mower_i_z_pos" value="${mower_height/3.0}" />
+
+ 
+  <xacro:property name="hardware_width" value="${mower_width/2.0}" />
+  <xacro:property name="hardware_length" value="${mower_length/2.0}" />
+  <xacro:property name="hardware_height" value="${mower_height/2.0}" />
+  <xacro:property name="hardware_z_offset" value="${hardware_height/2.0}" />
+
+  <xacro:property name="wheel_length" value="${scale * 0.0254}" />
+  <xacro:property name="wheel_radius" value="${scale * 0.127/2.0}" />
+  <xacro:property name="wheel_mass" value="${scale * 1}" />
+  <xacro:property name="wheel_inertia" value="${scale * 1e-3}" />
+  <xacro:property name="wheel_x_offset" value="${base_x_offset + robot_length/2.0}" />
+  <xacro:property name="wheel_y_offset" value="${robot_width/2.0 - wheel_length/2.0}" />
+
+  <xacro:property name="camerra_width" value="0.05" />
+  <xacro:property name="camerra_length" value="0.05" />
+  <xacro:property name="camerra_height" value="0.05" />
+  <xacro:property name="camerra_x_offset" value="${hardware_length/2.0 + base_x_offset - camerra_length/2.0 + 0.001}" />
+  <xacro:property name="camerra_z_offset" value="${hardware_height - camerra_height/2.0 + 0.001}" />
+
+  <xacro:property name="laser_width" value="0.1" />
+  <xacro:property name="laser_length" value="0.1" />
+  <xacro:property name="laser_height" value="0.1" />
+  <xacro:property name="laser_x_offset" value="${base_x_offset}" />
+  <xacro:property name="laser_z_offset" value="${hardware_height + 0.025}" />
+
+  <xacro:property name="wheel_kp" value="1000000.0" />
+  <xacro:property name="wheel_kd" value="100.0" />
+  <xacro:property name="wheel_mu1" value="1" />
+  <xacro:property name="wheel_mu2" value="1" />
+  <xacro:property name="wheel_slip1" value="0.5" />
+  <xacro:property name="wheel_slip2" value="0" />
+  <xacro:property name="material_dark_grey">
+    <material name="dark_grey">
+      <color rgba="0.3 0.3 0.3 1"/>
+    </material>
+  </xacro:property>
+
+
+
+
+  <link name="robot_footprint"></link>
+
+  <joint name="robot_foorprint_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="robot_footprint" />
+    <child link="chassis" />
+  </joint>
+
+  <link name='chassis'>
+    <inertial>
+      <mass value="${mower_mass}"/>
+      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <inertia
+          ixx="${mower_inertia_xx}" ixy="0" ixz="0"
+          iyy="${mower_inertia_yy}" iyz="0"
+          izz="${mower_inertia_zz}" />
+    </inertial>
+
+    <collision>
+      <origin xyz="${-robot_length/2.0} ${-robot_width/2.0} 0" rpy=" 0 0 0"/>
+      <geometry>
+       <mesh filename="package://robot_description/meshes/visual/footprint1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="${-robot_length/2.0} ${-robot_width/2.0} 0" rpy=" 0 0 0"/>
+      <geometry>
+        <mesh filename="package://robot_description/meshes/visual/footprint1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+       <xacro:insert_block name="material_dark_grey" />
+    </visual>
+    </link>
+
+   <!-- lower cover-->
+<joint  name="lowercover chassis" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <child link="lowercover"/>
+    <parent link="chassis"/>
+  </joint>
+
+
+
+
+  <link name='lowercover'>
+    <inertial>
+      <mass value="${mower_mass}"/>
+      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <inertia
+          ixx="${mower_inertia_xx}" ixy="0" ixz="0"
+          iyy="${mower_inertia_yy}" iyz="0"
+          izz="${mower_inertia_zz}" />
+    </inertial>
+
+    <collision>
+      <origin xyz="${-robot_length/2.0} ${-robot_width/2.0} -0.07" rpy="0 0 0"/>
+      <geometry>
+       <mesh filename="package://robot_description/meshes/visual/lowercover.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="-0.45 0.8 -0.07" rpy="${M_PI/2.0} 0 0"/>
+      <geometry>
+         <mesh filename="package://robot_description/meshes/visual/AMR.stl" scale="0.001 0.001 0.001" />
+      </geometry>
+    <xacro:insert_block name="material_dark_grey" />
+    </visual>
+
+   
+  </link>
+    <!-- left back wheel -->
+  <joint type="continuous" name="left_back_wheel_hinge">
+    <origin xyz="${l_b_wheel_center_x - (robot_length/2.0)}  ${l_b_wheel_center_y - (robot_width/2.0)} ${wheel_center_height}" rpy="0 0 0"/>
+    <child link="left_back_wheel"/>
+    <parent link="chassis"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+    <limit effort="10000" velocity="1000"/>
+    <joint_properties damping="1.0" friction="1.0"/>
+  </joint>
+
+  <link name="left_back_wheel">
+    <inertial>
+      <mass value="${wheel_mass}"/>
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <inertia
+        ixx="${wheel_inertia}" ixy="0" ixz="0"
+        iyy="${wheel_inertia}" iyz="0"
+        izz="${wheel_inertia}" />
+    </inertial>
+    <collision name="left_back_wheel_collision">
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+      </geometry>
+      <surface>
+        <friction>
+          <fdir1>1 0 0</fdir1>
+          <kp>${wheel_kp}</kp> <!-- kp and kd for rubber -->
+          <kd>${wheel_kd}</kd>
+          <mu>${wheel_mu1}</mu>
+          <mu2>${wheel_mu2}</mu2>
+          <slip1>${wheel_slip1}</slip1>
+          <slip2>${wheel_slip2}</slip2>
+        </friction>
+      </surface>
+    </collision>
+    <visual name="left_back_wheel_visual">
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <!-- right back wheel -->
+  <joint type="continuous" name="right_back_wheel_hinge">
+    <origin xyz="${length_extremity_center_wheel_x - (robot_length/2.0)} ${width_extremity_center_wheel_y - (robot_width/2.0)} ${wheel_center_height}" rpy="0 0 0"/>
+    <child link="right_back_wheel"/>
+    <parent link="chassis"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+    <limit effort="10000" velocity="1000"/>
+    <joint_properties damping="1.0" friction="1.0"/>
+  </joint>
+
+  <link name="right_back_wheel">
+    <inertial>
+      <mass value="${wheel_mass}"/>
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <inertia
+          ixx="${wheel_inertia}" ixy="0" ixz="0"
+          iyy="${wheel_inertia}" iyz="0"
+          izz="${wheel_inertia}" />
+    </inertial>
+    <collision name="right_back_wheel_collision">
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+      </geometry>
+      <surface>
+        <friction>
+          <fdir1>1 0 0</fdir1>
+          <kp>${wheel_kp}</kp> <!-- kp and kd for rubber -->
+          <kd>${wheel_kd}</kd>
+          <mu>${wheel_mu1}</mu>
+          <mu2>${wheel_mu2}</mu2>
+          <slip1>${wheel_slip1}</slip1>
+          <slip2>${wheel_slip2}</slip2>
+        </friction>
+      </surface>
+    </collision>
+    <visual name="right_back_wheel_visual">
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <!-- left front wheel -->
+  <joint type="continuous" name="left_front_wheel_hinge">
+    <origin xyz="${(robot_length/2.0) - length_extremity_center_wheel_x}  ${l_b_wheel_center_y - (robot_width/2.0)} ${wheel_center_height}" rpy="0 0 0"/>
+    <child link="left_front_wheel"/>
+    <parent link="chassis"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+    <limit effort="10000" velocity="1000"/>
+    <joint_properties damping="1.0" friction="1.0"/>
+  </joint>
+
+  <link name="left_front_wheel">
+    <inertial>
+      <mass value="${wheel_mass}"/>
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <inertia
+        ixx="${wheel_inertia}" ixy="0" ixz="0"
+        iyy="${wheel_inertia}" iyz="0"
+        izz="${wheel_inertia}" />
+    </inertial>
+    <collision name="left_front_wheel_collision">
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+      </geometry>
+      <surface>
+        <friction>
+          <fdir1>1 0 0</fdir1>
+          <kp>${wheel_kp}</kp> <!-- kp and kd for rubber -->
+          <kd>${wheel_kd}</kd>
+          <mu>${wheel_mu1}</mu>
+          <mu2>${wheel_mu2}</mu2>
+          <slip1>${wheel_slip1}</slip1>
+          <slip2>${wheel_slip2}</slip2>
+        </friction>
+      </surface>
+    </collision>
+    <visual name="left_front_wheel_visual">
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <!-- right front wheel -->
+  <joint type="continuous" name="right_front_wheel_hinge">
+    <origin xyz="${(robot_length/2.0) - length_extremity_center_wheel_x} ${width_extremity_center_wheel_y - (robot_width/2.0)} ${wheel_center_height}" rpy="0 0 0"/>
+    <child link="right_front_wheel"/>
+    <parent link="chassis"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+    <limit effort="10000" velocity="1000"/>
+    <joint_properties damping="1.0" friction="1.0"/>
+  </joint>
+
+  <link name="right_front_wheel">
+    <inertial>
+      <mass value="${wheel_mass}"/>
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <inertia
+          ixx="${wheel_inertia}" ixy="0" ixz="0"
+          iyy="${wheel_inertia}" iyz="0"
+          izz="${wheel_inertia}" />
+    </inertial>
+    <collision name="right_front_wheel_collision">
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+      </geometry>
+      <surface>
+        <friction>
+          <fdir1>1 0 0</fdir1>
+          <kp>${wheel_kp}</kp> <!-- kp and kd for rubber -->
+          <kd>${wheel_kd}</kd>
+          <mu>${wheel_mu1}</mu>
+          <mu2>${wheel_mu2}</mu2>
+          <slip1>${wheel_slip1}</slip1>
+          <slip2>${wheel_slip2}</slip2>
+        </friction>
+      </surface>
+    </collision>
+    <visual name="right_front_wheel_visual">
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
+      </geometry>
+    </visual>
+  </link>
+  
+
+   
+
+
+<joint type="fixed" name="hokuyo_joint">
+    <origin xyz="0 0 0.45" rpy="0 0 0"/>
+    <child link="hokuyo"/>
+    <parent link="chassis"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+    <limit effort="10000" velocity="1000"/>
+    <joint_properties damping="1.0" friction="1.0"/>
+  </joint>
+
+
+  <link name='hokuyo'>
+    <pose>0 0 0 0 0 0</pose>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <inertia
+          ixx="1e-6" ixy="0" ixz="0"
+          iyy="1e-6" iyz="0"
+          izz="1e-6" />
+    </inertial>
+    <collision name='hokuyo_collision'>
+      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <geometry>
+        <box size="${laser_length} ${laser_width} ${laser_height}"/>
+      </geometry>
+    </collision>
+    <visual name='hokuyo_visual'>
+      <origin xyz="0 0 0" rpy=" 0 0 0"/>
+      <geometry>
+        <mesh filename="package://skid_steer_robot/meshes/hokuyo.dae"/>
+      </geometry>
+    </visual>
+  </link>
+
+
+
+ <!-- hokuyo -->
+  <gazebo reference="hokuyo">
+    <sensor type="ray" name="head_hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>false</visualize>
+      <update_rate>40</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.570796</min_angle>
+            <max_angle>1.570796</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise parameters based on published spec for Hokuyo laser
+               achieving "+-30mm" accuracy at range < 10m.  A mean of 0.0m and
+               stddev of 0.01m will put 99.7% of samples within 0.03m of the true
+               reading. -->
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
+        <topicName>/skid_steer_robot/laser/scan</topicName>
+        <frameName>hokuyo</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+
+
+<joint name="kinect_frame_joint" type="fixed">
+      <origin xyz="$(arg kinect_xyz)" rpy="$(arg kinect_rpy)" />
+      <parent link="lowercover"/>
+      <child link="camera_link"/>
+    </joint>
+    
+
+
+
+
+
+    <!-- Create kinect reference frame -->
+    <!-- Add mesh for kinect -->
+    <link name="${prefix}_link">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 ${M_PI/2}"/>
+        <geometry>
+          <mesh filename="package://robot_description/meshes/visual/d435.dae" />
+        </geometry>
+      </visual>
+      <collision>
+        <geometry>
+            <mesh filename="package://robot_description/meshes/visual/d435.dae" />
+        </geometry>
+      </collision>
+    </link>
+
+
+    
+
+    <joint name="${prefix}_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="1.5708 3.1416 1.5708"/>
+      <parent link="${prefix}_link"/>
+      <child link="${prefix}_frame_optical"/>
+    </joint>
+
+    <link name="${prefix}_frame_optical"/>
+
+    <gazebo reference="${prefix}_link">
+      <selfCollide>true</selfCollide>
+      <turnGravityOff>true</turnGravityOff>
+      <sensor type="depth" name="${prefix}">
+        <always_on>true</always_on>
+        <update_rate>20.0</update_rate>
+        <camera>
+          <horizontal_fov>${60.0*M_PI/180.0}</horizontal_fov>
+          <image>
+            <format>R8G8B8</format>
+            <width>640</width>
+            <height>480</height>
+          </image>
+          <clip>
+            <near>0.05</near>
+            <far>8.0</far>
+          </clip>
+        </camera>
+        <plugin name="kinect_${prefix}_controller" filename="libgazebo_ros_openni_kinect.so">
+          <cameraName>${prefix}</cameraName>
+          <alwaysOn>true</alwaysOn>
+          <updateRate>10</updateRate>
+          <imageTopicName>rgb/image_raw</imageTopicName>
+          <depthImageTopicName>depth/image_raw</depthImageTopicName>
+          <pointCloudTopicName>depth/points</pointCloudTopicName>
+          <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+          <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
+          <frameName>${prefix}_frame_optical</frameName>
+          <baseline>0.1</baseline>
+          <distortion_k1>0.0</distortion_k1>
+          <distortion_k2>0.0</distortion_k2>
+          <distortion_k3>0.0</distortion_k3>
+          <distortion_t1>0.0</distortion_t1>
+          <distortion_t2>0.0</distortion_t2>
+          <pointCloudCutoff>0.4</pointCloudCutoff>
+        </plugin>
+      </sensor>
+    </gazebo>
+  
+
+    
+   <xacro:macro name="T265_fisheye" params="sensor_name reference_frame topic rate">
+    <gazebo reference="${reference_frame}">
+      <sensor name="camera" type="wideanglecamera">
+        <camera>
+          <horizontal_fov>6.283</horizontal_fov>
+          <image>
+            <width>800</width>
+            <height>848</height>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>100</far>
+          </clip>
+          <lens>
+            <type>custom</type>
+            <custom_function>
+              <c1>1.05</c1>
+              <c2>4</c2>
+              <f>1.0</f>
+              <fun>tan</fun>
+            </custom_function>
+            <scale_to_hfov>true</scale_to_hfov>
+            <cutoff_angle>3.1415</cutoff_angle>
+            <env_texture_size>512</env_texture_size>
+          </lens>
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>${rate}</updateRate>
+          <cameraName>${sensor_name}/${topic}</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>${reference_frame}</frameName>
+          <hackBaseline>0.07</hackBaseline>
+          <distortionK1>-0.007419134024530649</distortionK1>
+          <distortionK2>0.041209351271390915</distortionK2>
+          <distortionK3>-0.03811917081475258</distortionK3>
+          <distortionT1>0.006366158835589886</distortionT1>
+          <distortionT2>0.0</distortionT2>
+          <CxPrime>416.00531005859375</CxPrime>
+          <Cx>16.00531005859375</Cx>
+          <Cy>403.38909912109375</Cy>
+        </plugin>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- INTEL REALSENSE T265 -->
+
+  <xacro:macro name="realsense_T265" params="sensor_name parent_link rate *origin">
+
+    <joint name="${sensor_name}_odom_frame_joint" type="fixed">
+        <parent link="${parent_link}"/>
+        <child link="${sensor_name}_odom_frame"/>
+        <xacro:insert_block name="origin"/>
+    </joint>
+
+    <joint name="${sensor_name}_pose_frame_joint" type="fixed">
+        <parent link="${sensor_name}_odom_frame"/>
+        <child link="${sensor_name}_pose_frame"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/> <!-- check on real hw -->
+    </joint>
+    <link name="${sensor_name}_odom_frame"/>
+
+    <link name="${sensor_name}_pose_frame">
+        <visual>
+            <origin rpy="1.57 0 1.57" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/visual/realsense_t265.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="package://robot_description/meshes/visual/realsense_t265.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <mass value="0.055"/>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <inertia ixx="9.108e-05"
+                     ixy="0"
+                     ixz="0"
+                     iyy="2.51e-06"
+                     iyz="0"
+                     izz="8.931e-05"/>
+        </inertial>
+    </link>
+
+    <joint name="${sensor_name}_joint" type="fixed">
+        <parent link="${sensor_name}_pose_frame"/>
+        <child link="${sensor_name}_link"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/> <!-- check on real hw -->
+    </joint>
+    <link name="${sensor_name}_link"/>
+
+    <joint name="${sensor_name}_fisheye1_joint" type="fixed">
+        <parent link="${sensor_name}_link"/>
+        <child link="${sensor_name}_fisheye1_frame"/>
+        <origin rpy="0 0 0" xyz="0 0.042 0"/>
+    </joint>
+    <link name="${sensor_name}_fisheye1_frame"/>
+
+    <joint name="${sensor_name}_fisheye1_optical_joint" type="fixed">
+        <parent link="${sensor_name}_fisheye1_frame"/>
+        <child link="${sensor_name}_fisheye1_optical_frame"/>
+        <origin rpy="0 0 0" xyz="0.01 0 0"/>
+    </joint>
+    <link name="${sensor_name}_fisheye1_optical_frame"/>
+    <xacro:T265_fisheye
+      sensor_name="${sensor_name}"
+      reference_frame="${sensor_name}_fisheye1_optical_frame"
+      topic="fisheye1"
+      rate="${rate}">
+    </xacro:T265_fisheye>
+
+    <joint name="${sensor_name}_fisheye2_joint" type="fixed">
+        <parent link="${sensor_name}_link"/>
+        <child link="${sensor_name}_fisheye2_frame"/>
+        <origin rpy="0 0 0" xyz="0 -0.022 0"/>
+    </joint>
+    <link name="${sensor_name}_fisheye2_frame"/>
+
+    <joint name="${sensor_name}_fisheye2_optical_joint" type="fixed">
+        <parent link="${sensor_name}_fisheye2_frame"/>
+        <child link="${sensor_name}_fisheye2_optical_frame"/>
+        <origin rpy="0 0 0" xyz="0.01 0 0"/>
+    </joint>
+    <link name="${sensor_name}_fisheye2_optical_frame"/>
+    <xacro:T265_fisheye
+      sensor_name="${sensor_name}"
+      reference_frame="${sensor_name}_fisheye2_optical_frame"
+      topic="fisheye2"
+      rate="${rate}">
+    </xacro:T265_fisheye>
+
+    <joint name="${sensor_name}_gyro_joint" type="fixed">
+        <parent link="${sensor_name}_link"/>
+        <child link="${sensor_name}_gyro_frame"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/> <!-- check on real hw -->
+    </joint>
+    <link name="${sensor_name}_gyro_frame"/>
+
+    <gazebo reference="${sensor_name}_gyro_frame">
+        <gravity>true</gravity>
+        <sensor name="${sensor_name}_imu" type="imu">
+            <always_on>true</always_on>
+            <update_rate>${rate}</update_rate>
+            <visualize>false</visualize>
+            <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                <topicName>${sensor_name}/gyro/sample</topicName>
+                <bodyName>${sensor_name}_pose_frame</bodyName>
+                <updateRateHZ>${rate}</updateRateHZ>
+                <gaussianNoise>0.000001</gaussianNoise>
+                <xyzOffset>0 0 0</xyzOffset>
+                <rpyOffset>0 0 0</rpyOffset>
+                <frameName>${sensor_name}_link</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+    <joint name="${sensor_name}_accel_joint" type="fixed">
+        <parent link="${sensor_name}_link"/>
+        <child link="${sensor_name}_accel_frame"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/> <!-- check on real hw -->
+    </joint>
+    <link name="${sensor_name}_accel_frame"/> <!-- dummy -->
+
+    <gazebo> <!-- odometry -->
+        <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>${rate}</updateRate>
+            <bodyName>${sensor_name}_odom_frame</bodyName>
+            <topicName>${sensor_name}/odom/sample</topicName>
+            <gaussianNoise>0.001</gaussianNoise>
+            <frameName>world</frameName>
+            <xyzOffsets>0 0 0</xyzOffsets>
+            <rpyOffsets>0 0 0</rpyOffsets>
+        </plugin>
+    </gazebo>
+
+  </xacro:macro>
+
+
+  <xacro:realsense_T265 sensor_name="camerra" parent_link="lowercover" rate="30.0">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+  </xacro:realsense_T265>
+
+
+
+
+
+</robot>
